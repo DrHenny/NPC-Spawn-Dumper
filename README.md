@@ -1,2 +1,2 @@
 # NPC Spawn Dumper
-Open-Source OSRS Runelite Plugin designed to dumped spawns via region for https://play.rsps.app/
+Open-Source OSRS Runelite Plugin to dump NPC spawns via Region. Designed for https://play.rsps.app/
