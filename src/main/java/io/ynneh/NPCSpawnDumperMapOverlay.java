@@ -37,20 +37,22 @@ public class NPCSpawnDumperMapOverlay extends Overlay {
     public Dimension render(Graphics2D graphics) {
 
 
-        for (NPC npc : plugin.getNpcList()) {
+            plugin.getSpawns().keySet().forEach(v -> {
 
-            if (npc == null) {
-                continue;
-            }
+                Color color = Color.CYAN;
 
-            Color color = Color.CYAN;
+                int index = v.intValue();
 
-            Point minimapLocation = npc.getMinimapLocation();
+                NPC npc = plugin.getForIndex(index);
 
-            if (minimapLocation != null) {
-                OverlayUtil.renderMinimapLocation(graphics, minimapLocation, color.darker());
-            }
-        }
+                if (npc != null) {
+                    Point minimapLocation = npc.getMinimapLocation();
+                    if (minimapLocation != null) {
+                        OverlayUtil.renderMinimapLocation(graphics, minimapLocation, color.darker());
+                    }
+                }
+            });
+
         return null;
     }
 }
