@@ -46,10 +46,8 @@ public class NPCSpawnDumper extends Plugin {
     private Map<Integer, NPCSpawns> spawns;
 
     @Inject
-    private Client client;
-
     @Getter(AccessLevel.PACKAGE)
-    private List<NPC> npcList;
+    private Client client;
 
     @Getter(AccessLevel.PACKAGE)
     private Map<Integer, Map<Integer, NPCSpawns>> regions_dumped;
@@ -66,27 +64,30 @@ public class NPCSpawnDumper extends Plugin {
             SAVE_DIRECTORY.mkdirs();//creates directory if it doesn't exist.
         spawns = Maps.newConcurrentMap();//new map for spawns.
         regions_dumped = Maps.newConcurrentMap();//new map for regions dumped
-        npcList = Lists.newArrayList();
         overlayManager.add(minimapOverlay);
         log.debug("Started dumping NPC spawns!");
     }
 
+    /** Grabs cached npc based on index **/
+    public NPC getForIndex(int index) {
+        return client.getCachedNPCs()[index];
+    }
+
     @Subscribe
     public void onGameTick(GameTick event) {
+        save_region();
+    }
+
+    /**
+     * Cycles every game tick to ensure it updates the region id correctly
+     */
+    private void save_region() {
         int regionId = client.getLocalPlayer().getWorldLocation().getRegionID();
         if (regionId != currentRegionId) {
             regions_dumped.put(currentRegionId, spawns);//adds old region to prevent duplicates
             currentRegionId = regionId;
             spawns.clear();
             client.addChatMessage(ChatMessageType.BROADCAST, "Ynneh", regionSaveExists(regionId) ? "Region has already been dumped.. skipping id=" + regionId : "Clearing NPC list.. and setting new RegionId=" + regionId, null);
-        }
-
-        /** Used to update NPC location for the mini map **/
-        for (NPC npc : client.getCachedNPCs()) {
-            if (npc == null)
-                continue;
-            npcList.removeIf(n -> n.getIndex() == npc.getIndex());
-            npcList.add(npc);
         }
     }
 
@@ -97,6 +98,7 @@ public class NPCSpawnDumper extends Plugin {
                 int currentRegion = currentRegionId;
                 regions_dumped.remove(currentRegion);
                 spawns.clear();
+                client.getNpcs().stream().forEach(n -> dump(n));
                 client.addChatMessage(ChatMessageType.GAMEMESSAGE, "Ynneh", "Region " + currentRegion + " has been reset and has began to dump again.", null);
                 return;
             }
@@ -128,13 +130,15 @@ public class NPCSpawnDumper extends Plugin {
      */
     @Subscribe
     public void onNpcSpawned(NpcSpawned event) {
-        NPC npc = event.getNpc();
+        dump(event.getNpc());
+    }
 
+    private void dump(NPC npc) {
         /** NPC Definitions **/
         NPCComposition def = client.getNpcDefinition(npc.getId());
 
         /** Region ID of the NPC **/
-        int regionId = event.getNpc().getWorldLocation().getRegionID();
+        int regionId = npc.getWorldLocation().getRegionID();
 
         /** To prevent duplicate NPC spawns in different files **/
         if (regionId != currentRegionId)
@@ -169,7 +173,6 @@ public class NPCSpawnDumper extends Plugin {
         spawn.getPosition().add(npc.getWorldLocation());
         spawn.setDescription(npc.getName());
         spawns.put(index, spawn);
-        npcList.add(npc);
         try {
             File spawnsPath = new File(SAVE_DIRECTORY.getPath() + "/" + regionId + ".json");
             Files.write(spawnsPath.toPath(), new GsonBuilder().setPrettyPrinting().create().toJson(spawns.values()).getBytes());
@@ -203,6 +206,7 @@ public class NPCSpawnDumper extends Plugin {
             /** Sets current region on login to start dumping. **/
             case LOGGED_IN:
                 currentRegionId = client.getLocalPlayer().getWorldLocation().getRegionID();
+                save_region();
                 break;
         }
     }
