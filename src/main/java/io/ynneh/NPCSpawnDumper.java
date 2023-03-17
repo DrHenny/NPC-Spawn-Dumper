@@ -104,9 +104,9 @@ public class NPCSpawnDumper extends Plugin {
             }
 
             case "check": {
-                int size = getLocalNPCSize();
-                int saved = spawns.size();
-                client.addChatMessage(ChatMessageType.GAMEMESSAGE, "Ynneh", "Region " + currentRegionId + " spawn stats = " + saved + "/" + size, null);
+                int size = getLocalNPCSize();//spawns within render? i assume
+                int saved = spawns.size();//spawned saved upon npcspawned
+                client.addChatMessage(ChatMessageType.GAMEMESSAGE, "Ynneh", "Region " + currentRegionId + " spawn stats = " + saved + "/ (Predicted) " + size, null);
                 return;
             }
 
