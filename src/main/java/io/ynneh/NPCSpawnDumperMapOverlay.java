@@ -28,13 +28,9 @@ public class NPCSpawnDumperMapOverlay extends Overlay {
     private static final Color WHITE_TRANSLUCENT = new Color(255, 255, 255, 127);
 
     @Inject
-    private final Client client;
-
-    @Inject
-    public NPCSpawnDumperMapOverlay(Client client, NPCSpawnDumper plugin, NPCSpawnDumperConfig config) {
-        this.client = client;
-        setPosition(OverlayPosition.DYNAMIC);
-        setLayer(OverlayLayer.ABOVE_WIDGETS);
+    public NPCSpawnDumperMapOverlay(NPCSpawnDumper plugin, NPCSpawnDumperConfig config) {
+        this.setPosition(OverlayPosition.DYNAMIC);
+        this.setLayer(OverlayLayer.ABOVE_WIDGETS);
         this.plugin = plugin;
         this.config = config;
     }
@@ -66,8 +62,8 @@ public class NPCSpawnDumperMapOverlay extends Overlay {
     private void drawMapLines(Graphics2D graphics, int gridSize, Color gridColour) {
         final int gridTruncate = ~(gridSize - 1);
 
-        RenderOverview ro = client.getRenderOverview();
-        Widget map = client.getWidget(WidgetInfo.WORLD_MAP_VIEW);
+        RenderOverview ro = plugin.getClient().getRenderOverview();
+        Widget map = plugin.getClient().getWidget(WidgetInfo.WORLD_MAP_VIEW);
         Float pixelsPerTile = ro.getWorldMapZoom();
 
         if (map == null) {
